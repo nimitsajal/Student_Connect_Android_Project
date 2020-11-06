@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">Student Connect</string>
+
+    <string-array name="University">
+        <item>University</item>
+        <item>BMS University</item>
+        <item>PES University</item>
+        <item>RV Educational Institutions</item>
+        <item>Ramaiah Group of Institutions</item>
+    </string-array>
+
+    <string-array name="College">
+        <item>College</item>
+        <item>BMSCA - BMS College of Architecture</item>
+        <item>BMSCE - BMS College of Engineering</item>
+        <item>BMSCL - BMS College of Law</item>
+        <item>BMSCW - BMS College for Women</item>
+        <item>BMSECE - BMS Evening College of Engineering</item>
+        <item>BMSIT - BMS Institute of Technology</item>
+        <item>BMSSA - BMS School of Architecture</item>
+    </string-array>
+
+    <string-array name="Branch">
+        <item>Branch</item>
+        <item>M.Tech - Machine Design</item>
+        <item>M.Tech - Computer Network Engineering</item>
+        <item>BE - Medical Electronics Engineering</item>
+        <item>BE - Computer Science &amp; Engineering</item>
+        <item>BE - Mechanical Engineering</item>
+        <item>M.Tech - Power Electronics</item>
+        <item>BE - Electronics &amp; Communications Engineering</item>
+        <item>BE - Bio Technology Engineering</item>
+    </string-array>
+
+    <string-array name="Semester">
+        <item>Semester</item>
+        <item>Semester 1</item>
+        <item>Semester 2</item>
+        <item>Semester 3</item>
+        <item>Semester 4</item>
+        <item>Semester 5</item>
+        <item>Semester 6</item>
+        <item>Semester 7</item>
+        <item>Semester 8</item>
+    </string-array>
+</resources>
