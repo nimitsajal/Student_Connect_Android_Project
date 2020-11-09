@@ -1,15 +1,17 @@
 package com.nimitsajal.studentconnect
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_colege_details.*
 import kotlinx.android.synthetic.main.activity_sign_up.toLoginPage
 
@@ -32,7 +34,7 @@ class colegeDetails : AppCompatActivity() {
         }
 
         btnRegister.setOnClickListener {
-            //performRegister()
+            performRegister()
 
             displaySavedData()
         }
@@ -256,6 +258,32 @@ class colegeDetails : AppCompatActivity() {
 //        Toast.makeText(this, semester_name, Toast.LENGTH_LONG).show()
     }
 
+    private fun uploadImageToFirebaseStorage(selectedPhotoUrl: Uri?, userName: String){
+        if(selectedPhotoUrl == null){
+            Log.d("dp", "nothing")
+            return
+//            return "https://firebasestorage.googleapis.com/v0/b/student-connect-b96e6.appspot.com/o/user_dp%2Fuser_default_dp.png?alt=media&token=4a2736ef-c5cb-4845-9d0f-894e7bf3c6a2"
+        }
+
+//        val filename = UUID.randomUUID().toString()
+        val ref = FirebaseStorage.getInstance().getReference("user_dp/$userName")
+        ref.putFile(selectedPhotoUrl)
+            .addOnSuccessListener {
+                Log.d(
+                    "Registration",
+                    "Image successfully uploaded at location: ${it.metadata?.path}"
+                )
+                ref.downloadUrl
+                    .addOnSuccessListener { result ->
+                        Log.d("dp", "image url: ${result.toString()}")
+//                        return result.toString()
+                    }
+            }
+            .addOnFailureListener {
+                Log.d("dp", "Image upload failed: ${it.message}")
+            }
+    }
+
     private fun performRegister(){
 //        val userName = etName_signup.text.toString()
 //        val userEmail = etEmail_signup.text.toString()
@@ -263,37 +291,38 @@ class colegeDetails : AppCompatActivity() {
 //        val userUserName = etUserName_signup.text.toString()
 //        val userPhone = etPhone_signup.text.toString()
 
+        Toast.makeText(this, "Entered Perform Register", Toast.LENGTH_SHORT).show()
+
         val userName = intent.getStringExtra("userName_signup")
         val userEmail = intent.getStringExtra("userEmail_signup")
         val userPassword = intent.getStringExtra("userPassword_signup")
         val userUserName = intent.getStringExtra("userUserName_signup")
         val userPhone = intent.getStringExtra("userPhone_signup")
+        val selectedPhotoUrl_string: String? = intent.getStringExtra("dpImage_string")
 
-        if (userName != null) {
-            if (userEmail != null) {
-                if (userPassword != null) {
-                    if (userUserName != null) {
-                        if (userPhone != null) {
-                            if(userName.isEmpty() || userEmail.isEmpty() || userPassword.isEmpty() || userUserName.isEmpty() || userPhone.isEmpty()){
-                                Toast.makeText(this, "Don't leave any fields blank!", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        val selectedPhotoUrl = Uri.parse(selectedPhotoUrl_string)
+
 
         if (userEmail != null) {
             if (userPassword != null) {
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
                     .addOnSuccessListener {
-                        Log.d("Registration", "Registration successful for uid: ${it.user.toString()}")
+                        Log.d(
+                            "Registration",
+                            "Registration successful for uid: ${it.user.toString()}"
+                        )
                         Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
+                        if (userName != null) {
+                            uploadImageToFirebaseStorage(selectedPhotoUrl, userName)
+                        }
                     }
                     .addOnFailureListener {
                         Log.d("Registration", "Registration failed! : ${it.message}")
-                        Toast.makeText(this, "Registration Failed: ${it.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this,
+                            "Registration Failed: ${it.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
             }
         }
