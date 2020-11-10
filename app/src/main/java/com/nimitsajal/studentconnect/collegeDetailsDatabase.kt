@@ -310,7 +310,7 @@ class collegeDetailsDatabase : AppCompatActivity() {
             return
         }
         else{
-            val photoReference = storageReference.child("gs://student-connect-b96e6.appspot.com/user_dp/$userName-photo.jpg")
+            val photoReference = storageReference.child("https://console.firebase.google.com/project/student-connect-b96e6/storage/student-connect-b96e6.appspot.com/files/user_dp/${userName}-photo.jpg")
             photoReference.putFile(selectedPhotoUrl)
                 .addOnSuccessListener {
                     Log.d("dp", it.totalByteCount.toString())
@@ -320,6 +320,7 @@ class collegeDetailsDatabase : AppCompatActivity() {
                 }
         }
     }
+
 
 
     private fun performRegister(){
@@ -340,9 +341,10 @@ class collegeDetailsDatabase : AppCompatActivity() {
 
         val selectedPhotoUrl = Uri.parse(selectedPhotoUrl_string)
 
+        val url = "https://firebasestorage.googleapis.com/v0/b/student-connect-b96e6.appspot.com/o/user_dp%2Fuser_default_dp.png?alt=media&token=4a2736ef-c5cb-4845-9d0f-894e7bf3c6a2"
 
         if (userEmail != null) {
-            if (userPassword != null) {
+            if (userPassword != null && userName != null && userUserName != null && userPhone != null) {
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
                     .addOnSuccessListener {
                         Log.d(
@@ -350,9 +352,10 @@ class collegeDetailsDatabase : AppCompatActivity() {
                             "Registration successful for uid: ${it.user.toString()}"
                         )
                         Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
-                        if (userName != null) {
-                            uploadImageToFirebaseStorage(selectedPhotoUrl, userName)
-                        }
+//                        if (userName != null) {
+//                            uploadImageToFirebaseStorage(selectedPhotoUrl, userName)
+//                        }
+                        //savedata(userName, userEmail, userUserName, userPhone, url)
                     }
                     .addOnFailureListener {
                         Log.d("Registration", "Registration failed! : ${it.message}")
@@ -364,5 +367,129 @@ class collegeDetailsDatabase : AppCompatActivity() {
                     }
             }
         }
+    }
+
+    private fun savedata(userName: String, userEmail: String, userUserName: String, userPhone: String, selectedPhotoUrl: String)
+    {
+        var university: HashMap<String, Any> = hashMapOf<String,Any>()
+        university.put("University", university_name)
+        university.put("College", college_name)
+        university.put("Branch", branch_name)
+        university.put("Semester", semester_name)
+
+        var user: HashMap<String, Any> = hashMapOf<String,Any>()
+        user.put("Name", userName)
+        user.put("Email", userEmail)
+        user.put("Phone Number", userPhone)
+        user.put("Picture", selectedPhotoUrl)
+        user.put("Description", "")
+        user.put("College", university)
+
+        val db = FirebaseFirestore.getInstance()
+        var inner: HashMap<String, Any> = hashMapOf<String,Any>()
+        inner.put("Info", "Info")
+
+        db.collection("User").document(userUserName)
+            .set(user)
+            .addOnCompleteListener {
+                if(it.isSuccessful)
+                {
+                    db.collection("User").document(userUserName).collection("Friends").document("Info")
+                        .set(inner)
+                        .addOnCompleteListener { it2 ->
+                            if (it2.isSuccessful) {
+                                db.collection("User").document(userUserName).collection("Medals")
+                                    .document("Info")
+                                    .set(inner)
+                                    .addOnCompleteListener { it3 ->
+                                        if (it3.isSuccessful) {
+                                            db.collection("User").document(userUserName)
+                                                .collection("Medals").document("Info")
+                                                .set(inner)
+                                                .addOnCompleteListener { it4 ->
+                                                    if (it4.isSuccessful) {
+                                                        db.collection("User").document(userUserName)
+                                                            .collection("My Feed").document("Info")
+                                                            .set(inner)
+                                                            .addOnCompleteListener { it5 ->
+                                                                if (it5.isSuccessful) {
+                                                                    db.collection("User").document(userUserName)
+                                                                        .collection("My Posts").document("Info")
+                                                                        .set(inner)
+                                                                        .addOnCompleteListener { it6 ->
+                                                                            if (it6.isSuccessful) {
+                                                                                db.collection("User").document(userUserName)
+                                                                                    .collection("Tags").document("Info")
+                                                                                    .set(inner)
+                                                                                    .addOnCompleteListener{it7->
+                                                                                        if(it7.isSuccessful)
+                                                                                        {
+                                                                                            Log.d("database", "User uploaded")
+                                                                                            db.collection("University").document(university_name)
+                                                                                                .collection("Student").document(userUserName)
+                                                                                                .set(inner)
+                                                                                                .addOnCompleteListener { it8->
+                                                                                                    if (it8.isSuccessful)
+                                                                                                    {
+                                                                                                        db.collection("University").document("Next")
+                                                                                                            .collection(university_name).document(college_name)
+                                                                                                            .collection("Student").document(userUserName)
+                                                                                                            .set(inner)
+                                                                                                            .addOnCompleteListener { it9->
+                                                                                                                if (it9.isSuccessful)
+                                                                                                                {
+                                                                                                                    db.collection("University").document("Next")
+                                                                                                                        .collection(university_name).document("Next")
+                                                                                                                        .collection(college_name).document(branch_name)
+                                                                                                                        .collection("Student").document(userUserName)
+                                                                                                                        .set(inner)
+                                                                                                                        .addOnCompleteListener { it10->
+                                                                                                                            if (it10.isSuccessful)
+                                                                                                                            {
+                                                                                                                                db.collection("University").document("Next")
+                                                                                                                                    .collection(university_name).document("Next")
+                                                                                                                                    .collection(college_name).document("Next")
+                                                                                                                                    .collection(branch_name).document(semester_name)
+                                                                                                                                    .collection("Student").document(userUserName)
+                                                                                                                                    .set(inner)
+                                                                                                                                    .addOnCompleteListener { it11->
+                                                                                                                                        if (it11.isSuccessful)
+                                                                                                                                        {
+                                                                                                                                            Log.d("database", "User enrolled in College")
+                                                                                                                                        }
+                                                                                                                                        else
+                                                                                                                                        {
+                                                                                                                                            Log.d("database", "College records not updated")
+                                                                                                                                        }
+                                                                                                                                    }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                }
+                                                                                                            }
+                                                                                                    }
+                                                                                                }
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            Log.d("database", "User not uploaded")
+                                                                                        }
+                                                                                    }
+                                                                            }
+                                                                        }
+                                                                }
+                                                            }
+                                                    }
+                                                }
+                                        }
+                                    }
+                            }
+                        }
+                }
+                else
+                {
+                    Log.d("database", "User not uploaded")
+                }
+            }
+
     }
 }
