@@ -29,37 +29,11 @@ class Sign_up : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        val userName = intent.getStringExtra("userName_signup")
-        val userEmail = intent.getStringExtra("userEmail_signup")
-        val userPassword = intent.getStringExtra("userPassword_signup")
-        val userUserName = intent.getStringExtra("userUserName_signup")
-        val userPhone = intent.getStringExtra("userPhone_signup")
-        val selectedPhotoUrl_string: String? = intent.getStringExtra("dpImage_string")
-        val selectedPhoto = Uri.parse(selectedPhotoUrl_string)
-
-        if(userName != null){
-            etName_signup.setText(userName.toString())
-        }
-        if(userEmail != null){
-            etEmail_signup.setText(userEmail.toString())
-        }
-        if(userPassword != null){
-            etPassword_signup.setText(userPassword.toString())
-        }
-        if(userPhone != null){
-            etPhone_signup.setText(userPhone.toString())
-        }
-//        if(selectedPhoto != null){
-//            selectedPhotoUrl = selectedPhoto
-//            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedPhotoUrl)
-//            circularImageView.setImageBitmap(bitmap)
-//            btnDP.alpha = 0f
-//        }
-
 
         toLoginPage.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         btnDP.setOnClickListener {
@@ -67,6 +41,7 @@ class Sign_up : AppCompatActivity() {
         }
 
         btnContinueToClgDetails.setOnClickListener {
+            btnContinueToClgDetails.isEnabled = false
             goToCollegeDetails()
         }
 
@@ -101,42 +76,8 @@ class Sign_up : AppCompatActivity() {
         return false
     }
 
-//    @Synchronized fun retFalse(){
-//        isUserPresent = false
-//    }
-//
-//    @Synchronized fun retTrue(){
-//        isUserPresent = true
-//    }
-
-//    @Synchronized private fun checkUserExist(userName: String):Boolean {
-//        val db = FirebaseFirestore.getInstance()
-//        retTrue()
-//        db.collection("User")
-//            .get()
-//            .addOnSuccessListener { result ->
-//                for(document in result){
-//                    if(document.id == userName){
-//                        Log.d("ret", " in if, isUserPresent = $isUserPresent, username in db = ${document.id}, username entered = $userName")
-//                        retFalse()
-//                        Log.d("ret", " in if, isUserPresent = $isUserPresent")
-//                    }
-//                }
-//
-//                Log.d("ret", " in success, isUserPresent = $isUserPresent")
-//                //retFalse()
-//                Log.d("ret", " in success, isUserPresent = $isUserPresent")
-//            }
-//            .addOnFailureListener { exception ->
-//                Log.d("ret", " in failure, isUserPresent = $isUserPresent")
-//                retTrue()
-//                Log.d("ret", " in failure, isUserPresent = $isUserPresent")
-//            }
-//        return isUserPresent
-//    }
 
     @Synchronized fun goToCollegeDetails(){
-
 
         val userName = etName_signup.text.toString()
         val userEmail = etEmail_signup.text.toString()
@@ -146,99 +87,77 @@ class Sign_up : AppCompatActivity() {
 
         if(userName.isEmpty() || userEmail.isEmpty() || userPassword.isEmpty() || userUserName.isEmpty() || userPhone.isEmpty()){
             Toast.makeText(this, "Don't leave any fields blank!", Toast.LENGTH_SHORT).show()
+            btnContinueToClgDetails.isEnabled = true
             return
         }
 
-//        isUserPresent = checkUserExist(userUserName)
-
-        val db = FirebaseFirestore.getInstance()
-//        retTrue()
-        db.collection("User")
-            .get()
-            .addOnSuccessListener { result ->
-                for(document in result){
-                    if(document.id == userUserName){
-//                        Log.d("ret", " in if, isUserPresent = $isUserPresent, username in db = ${document.id}, username entered = $userUserName")
-//                        retFalse()
-//                        Log.d("ret", " in if, isUserPresent = $isUserPresent")
-                        Toast.makeText(this, "Username already exists!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this, Sign_up::class.java)
-                        intent.putExtra("userName_signup", userName)
-                        intent.putExtra("userEmail_signup", userEmail)
-                        intent.putExtra("userPassword_signup", userPassword)
-                        intent.putExtra("userUserName_signup", userUserName)
-                        intent.putExtra("userPhone_signup", userPhone)
-                        intent.putExtra("dpImage_string", selectedPhotoUrl.toString())
-                        startActivity(intent)
-                        finish()
-                    }
-                }
-
-
-//                Log.d("ret", " in success, isUserPresent = $isUserPresent")
-//                //retFalse()
-//                Log.d("ret", " in success, isUserPresent = $isUserPresent")
-            }
-            .addOnFailureListener { exception ->
-//                Log.d("ret", " in failure, isUserPresent = $isUserPresent")
-//                retTrue()
-//                Log.d("ret", " in failure, isUserPresent = $isUserPresent")
-            }
-
-//        if(!isUserPresent){
-//            Toast.makeText(this, "User Already Exists", Toast.LENGTH_SHORT).show()
-//            return
-//        }
-
         if(!isEmailValid(userEmail)){
             Toast.makeText(this, "Email is Invalid!", Toast.LENGTH_SHORT).show()
+            //TODO: Switching The button Back On
+            btnContinueToClgDetails.isEnabled=true
             return
         }
 
         if(!isValidMobile(userPhone)){
             Toast.makeText(this, "Phone number is Invalid!", Toast.LENGTH_SHORT).show()
+            //TODO: Switching The button Back On
+            btnContinueToClgDetails.isEnabled=true
             return
         }
 
         if(!isPasswordValid(userPassword)){
             Toast.makeText(this, "Weak Password!", Toast.LENGTH_SHORT).show()
+            //TODO: Switching The button Back On
+            btnContinueToClgDetails.isEnabled=true
             return
         }
 
-        uploadImageToFirebaseStorage()
+        val db = FirebaseFirestore.getInstance()
 
-        val intent = Intent(this, collegeDetailsDatabase::class.java)
-        intent.putExtra("userName_signup", userName)
-        intent.putExtra("userEmail_signup", userEmail)
-        intent.putExtra("userPassword_signup", userPassword)
-        intent.putExtra("userUserName_signup", userUserName)
-        intent.putExtra("userPhone_signup", userPhone)
-        intent.putExtra("dpImage_string", selectedPhotoUrl.toString())
-        startActivity(intent)
+        db.collection("User")
+            .get()
+            .addOnSuccessListener{ result ->
+                var truth = false
+                for(document in result)
+                {
+                    Log.d("database", "-${document.id}-")
+                    if(document.id == userUserName)
+                    {
+                        truth = true
+                        break
+                    }
+                }
+                Log.d("database", "Username present -$truth-")
+                //TODO: Switching The button Back On
+                btnContinueToClgDetails.isEnabled=true
+                if(result.contains(userUserName))
+                    Log.d("database", "Username present -$userUserName-")
+
+                if(!truth)
+                {
+                    val intent = Intent(this, collegeDetailsDatabase::class.java)
+                    intent.putExtra("userName_signup", userName)
+                    intent.putExtra("userEmail_signup", userEmail)
+                    intent.putExtra("userPassword_signup", userPassword)
+                    intent.putExtra("userUserName_signup", userUserName)
+                    intent.putExtra("userPhone_signup", userPhone)
+                    intent.putExtra("dpImage_string", selectedPhotoUrl.toString())
+                    startActivity(intent)
+                    //finish()
+                }
+                else
+                {
+                    Toast.makeText(this, "Username already exists!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
+            .addOnFailureListener { exception ->
+                Log.d("ret", " in failure, isUserPresent = $exception")
+            }
+
+
     }
-
-//    private fun performRegister(){
-//        val userName = etName_signup.text.toString()
-//        val userEmail = etEmail_signup.text.toString()
-//        val userPassword = etPassword_signup.text.toString()
-//        val userUserName = etUserName_signup.text.toString()
-//        val userPhone = etPhone_signup.text.toString()
-//
-//        if(userName.isEmpty() || userEmail.isEmpty() || userPassword.isEmpty() || userUserName.isEmpty() || userPhone.isEmpty()){
-//            Toast.makeText(this, "Don't leave any fields blank!", Toast.LENGTH_SHORT).show()
-//            return
-//        }
-//
-//        auth.createUserWithEmailAndPassword(userEmail, userPassword)
-//            .addOnSuccessListener {
-//                Log.d("Registration", "Registration successful for uid: ${it.user.toString()}")
-//                Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
-//            }
-//            .addOnFailureListener {
-//                Log.d("Registration", "Registration failed! : ${it.message}")
-//                Toast.makeText(this, "Registration Failed: ${it.message}", Toast.LENGTH_LONG).show()
-//            }
-//    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -259,8 +178,6 @@ class Sign_up : AppCompatActivity() {
         intent.type = "image/*"
         startActivityForResult(intent, 0)
     }
-
-
 
 
     private fun uploadImageToFirebaseStorage(){

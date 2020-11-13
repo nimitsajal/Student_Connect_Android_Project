@@ -9,7 +9,6 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -30,6 +29,7 @@ class collegeDetailsDatabase : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_colege_details)
 
+        val auth = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
 
         storageReference = FirebaseStorage.getInstance().reference
@@ -40,7 +40,8 @@ class collegeDetailsDatabase : AppCompatActivity() {
         }
 
         btnRegister.setOnClickListener {
-            performRegister()
+            btnRegister.isEnabled = false
+            performRegister(auth)
             displaySavedData()
         }
 
@@ -323,12 +324,33 @@ class collegeDetailsDatabase : AppCompatActivity() {
 
 
 
-    private fun performRegister(){
-//        val userName = etName_signup.text.toString()
-//        val userEmail = etEmail_signup.text.toString()
-//        val userPassword = etPassword_signup.text.toString()
-//        val userUserName = etUserName_signup.text.toString()
-//        val userPhone = etPhone_signup.text.toString()
+    private fun performRegister(auth: FirebaseAuth) {
+
+        Log.d("database", "${university_name.toString()} -> ${college_name.toString()} -> ${branch_name.toString()} -> ${semester_name.toString()}")
+        if(university_name == "University")
+        {
+            btnRegister.isEnabled = true
+            Toast.makeText(this, "Enter The University", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(college_name== "College")
+        {
+            btnRegister.isEnabled = true
+            Toast.makeText(this, "Enter The College", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(branch_name== "Branch")
+        {
+            btnRegister.isEnabled = true
+            Toast.makeText(this, "Enter The Branch", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(semester_name== "Semester")
+        {
+            btnRegister.isEnabled = true
+            Toast.makeText(this, "Enter The Semester", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         Toast.makeText(this, "Entered Perform Register", Toast.LENGTH_SHORT).show()
 
@@ -345,19 +367,53 @@ class collegeDetailsDatabase : AppCompatActivity() {
 
         if (userEmail != null) {
             if (userPassword != null && userName != null && userUserName != null && userPhone != null) {
-                FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
+                auth.createUserWithEmailAndPassword(userEmail, userPassword)
                     .addOnSuccessListener {
+                        btnRegister.isEnabled = true
                         Log.d(
                             "Registration",
                             "Registration successful for uid: ${it.user.toString()}"
                         )
-                        Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
+                        var user = auth.currentUser
+                        if (user != null) {
+                            Toast.makeText(this, "Registration Successful $userUserName", Toast.LENGTH_SHORT).show()
+                        }
 //                        if (userName != null) {
 //                            uploadImageToFirebaseStorage(selectedPhotoUrl, userName)
 //                        }
                         //savedata(userName, userEmail, userUserName, userPhone, url)
+
+                        val db = FirebaseFirestore.getInstance()
+                        var Emailing: HashMap<String, Any> = hashMapOf<String,Any>()
+                        if (user != null) {
+                            Emailing.put("Username", userUserName)
+                            db.collection("User Table").document(user.uid)
+                                .set(Emailing)
+                                .addOnCompleteListener{
+                                    if(it.isSuccessful)
+                                    {
+                                        Log.d(
+                                            "Registration",
+                                            "Added The Link"
+                                        )
+                                    }
+                                    else
+                                    {
+                                        Log.d(
+                                            "Registration",
+                                            "Link not added"
+                                        )
+                                    }
+                                }
+                        }
+                        Toast.makeText(this,"Logging In", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this, mainFeed::class.java)
+                        startActivity(intent)
+                        finish()
+                        finish()
                     }
                     .addOnFailureListener {
+                        btnRegister.isEnabled = true
                         Log.d("Registration", "Registration failed! : ${it.message}")
                         Toast.makeText(
                             this,
